@@ -3,7 +3,7 @@ import json
 from ..apiKey import googleKey
 
 
-def rank_professionals_with_gemini(user_data, prof_data):
+def rank_professionals(user_data, prof_data):
     """
     Ranks professionals based on user data using Google AI's Gemini model.
 
