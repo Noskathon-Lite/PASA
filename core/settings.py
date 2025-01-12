@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'bettermind',
+    'rest_framework',
 
 
     'django.contrib.admin',
