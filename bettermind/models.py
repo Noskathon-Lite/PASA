@@ -19,7 +19,7 @@ class User(CustomUser):
 
     def __str__(self):
         return self.username
-    
+
 
 
 class Prof(CustomUser):
@@ -32,3 +32,28 @@ class Prof(CustomUser):
 
     def __str__(self):
         return self.username
+
+
+
+class UserData(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='userdata')
+    questionNo = models.IntegerField()
+    questionText = models.TextField()
+    answer = models.TextField()
+
+    def __str__(self):
+        return f"Userdata of {self.user.username}"
+    
+
+
+class ProfData(models.Model):
+    prof = models.ForeignKey(Prof, on_delete=models.CASCADE, related_name='profdata')
+    questionNo = models.IntegerField()
+    questionText = models.TextField()
+    answer = models.TextField()
+
+#    class Meta:
+#        ordering = ['questionNo']
+
+    def __str__(self):
+        return f"Profdata of {self.prof.username}"
