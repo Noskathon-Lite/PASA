@@ -17,7 +17,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             fullname=validated_data['fullname']
         )
         return user
-    
+
 
 class ProfRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -34,24 +34,27 @@ class ProfRegistrationSerializer(serializers.ModelSerializer):
             user_type = 'prof'
         )
         return prof
+    
+
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=150)
+    password = serializers.CharField(write_only=True)
+    def validate(self, data):
+        print("Login serializer")
+        username = data.get('username')
+        password = data.get('password')
+        user = authenticate(username=username, password=password)
+        if not user:
+            raise serializers.ValidationError("Invalid username or password.")
+        data['user'] = user
+        return data
 
 
-class LoginAPIView(APIView):
-    def post(self, request):
-        serializer = LoginSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.validated_data['user']
-            print(f"Logged in as: {user.username}")
-            #print(f"ATTRIBUTES: {user.__dict__}") To get all attributes of an object.
-            return Response({
-                "msg": "Login successful",
-                "username": user.username,
-                "userType": "Prof" if (user.user_type == "prof") else "User"
-            }, status=status.HTTP_200_OK)
-        else:
-            return Response(
-                {'msg': 'Invalid Username or password',
-                'error': serializer.errors
-                }, 
-                status=status.HTTP_400_BAD_REQUEST
-                )
+class AnswerSubmitSerializer(serializers.Serializer):
+    profId = serializers.IntegerField()
+    answers = serializers.ListField(
+        child=serializers.CharField(),
+        min_length=10,
+        max_length=10,
+        help_text="A list of 10 answers."
+    )

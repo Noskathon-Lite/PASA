@@ -1,9 +1,21 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import UserRegistrationSerializer, ProfRegistrationSerializer, LoginSerializer
-
-
+from .serializers import UserRegistrationSerializer, ProfRegistrationSerializer, LoginSerializer, AnswerSubmitSerializer
+from .models import User,UserData,Prof,ProfData
+'''
+def registration_view(request):
+    if request.method == "POST":
+        serializer = RegistrationSerializer(request.body)
+        if serializer.is_valid():
+            user = serializer.save()
+            print(f"USER Created. ID: {user.id}, Username: {user.username}")
+            return Response({'msg': 'User Registered successfully.'}, status=status.HTTP_200_CREATED)
+        else:
+            return Response({'msg': 'User with that username already Exist.'}, status=400)
+    else:
+        return Response({'msg': 'Bad Request'}, status=status.HTTP_400_BAD_REQUEST)
+'''
 class UserRegistrationAPIView(APIView):
     def post(self, request):
         print("WORKED")
@@ -47,3 +59,86 @@ class LoginAPIView(APIView):
                 }, 
                 status=status.HTTP_400_BAD_REQUEST
                 )
+
+
+userQuestions = [
+    "How have you been feeling lately?",
+    "How long has this been going on for you?",
+    "Have you ever talked to a therapist or counselor before? If yes, how did it go?",
+    "Did something happen recently that might have triggered how you’re feeling?",
+    "Is this affecting your work, relationships, or day-to-day life?",
+    "Are you taking any medications or trying anything else to help with this?",
+    "What’s something you do that helps you feel even a little better?",
+    "Have you gone through any big life changes lately, like a breakup, loss, or something else?",
+    "Have you ever had thoughts of hurting yourself or giving up? If yes, did you talk to anyone about it?",
+    "Just so we can understand better—how old are you, and how do you identify (e.g., male, female, non-binary)?",
+]
+
+
+profData_list = []
+userData_list = []
+def fetch(data, Uname, p):
+    data_list2 = []
+    if p == True:
+        for d in data:
+            data_dict = {
+                'prof id': d.prof.id,
+                'questionNo': d.questionNo,
+                'question': d.questionText,
+                'answer': d.answer
+            }
+            data_list2.append(data_dict)
+        profData_list.append(data_list2)
+        
+        print(f"DONE for prof: {Uname}")
+    else:
+        for d in data:
+            data_dict = {
+                'user id': d.user.id,
+                'questionNo': d.questionNo,
+                'question': d.questionText,
+                'answer': d.answer
+            }
+            data_list2.append(data_dict)
+        userData_list.append(data_list2)
+        print(f"DONE for user: {Uname}")
+
+def get_data(Id, p):
+    if p == True:
+        prof = Prof.objects.get(id=Id)
+        profData = prof.profdata.all()
+        uname = prof.username
+        print(f"Fetching data of Prof: {uname}")
+        fetch(profData, uname, p)
+    else:
+        user = User.objects.get(id=Id)
+        userData = user.userdata.all()
+        uname = user.username
+        print(f"Fetching data of User: {uname}")
+        fetch(userData, uname, p)
+
+    
+class AnswerSubmitAPIView(APIView):
+    def post(self, request):
+        serializer = AnswerSubmitSerializer(data=request.data)
+        print("AnswerSubmitAPIView triggered.")
+        if serializer.is_valid():
+            userId = serializer.validated_data['userId']
+            answers = serializer.validated_data['answers']
+
+            print(f"Received userId: {userId}")
+            user = User.objects.get(id=userId)
+            for i in range(0,10):
+                UserData.objects.create(user=user, questionNo=i, questionText=userQuestions[i], answer=answers[i])
+                print(f"Set answer {i} for user: {user.username}.")
+            get_data(user.id, False)
+            for i, answer in enumerate(answers):
+                print(f"Answer {i}: {answer}")
+
+            return Response({
+                "msg": "Answers received successfully",
+                "profId": profId,
+                "answers": answers
+            }, status=status.HTTP_200_OK)
+        return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
