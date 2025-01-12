@@ -51,7 +51,7 @@ class LoginSerializer(serializers.Serializer):
 
 
 class AnswerSubmitSerializer(serializers.Serializer):
-    profId = serializers.IntegerField()
+    userId = serializers.IntegerField()
     answers = serializers.ListField(
         child=serializers.CharField(),
         min_length=10,

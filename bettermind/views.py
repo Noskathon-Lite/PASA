@@ -3,6 +3,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from .serializers import UserRegistrationSerializer, ProfRegistrationSerializer, LoginSerializer, AnswerSubmitSerializer
 from .models import User,UserData,Prof,ProfData
+import json
+from geminitest import rank_professionals_with_gemini
+
 '''
 def registration_view(request):
     if request.method == "POST":
@@ -131,14 +134,35 @@ class AnswerSubmitAPIView(APIView):
             for i in range(0,10):
                 UserData.objects.create(user=user, questionNo=i, questionText=userQuestions[i], answer=answers[i])
                 print(f"Set answer {i} for user: {user.username}.")
-            get_data(user.id, False)
-            for i, answer in enumerate(answers):
-                print(f"Answer {i}: {answer}")
-
+            
+            print("getting data of users.")
+            get_data(user.id, p=False)
+            prof_ids = [prof.id for prof in Prof.objects.all()]
+            print("getting data of professionals.")
+            for id in prof_ids:
+                get_data(id, p=True)
+            
+            user_Jsonoutput = json.dumps(userData_list, indent=2)
+            prof_Jsonoutput = json.dumps(profData_list, indent=2)
+            print("Prof data: ")
+            print(prof_Jsonoutput)
+            print("User data: ")
+            print(user_Jsonoutput)
+            
+            print("SENDING TO GEMINI.")
+            matchingProfs = rank_professionals_with_gemini(user_Jsonoutput, prof_Jsonoutput)
+            print(f"THE RESULT From Gemini: ")
+            print(matchingProfs)
+            matchingProfs_ids = [int(profId) for profId in matchingProfs.split(",")]
+            matchingProfs_names = []
+            for j in matchingProfs_ids:
+                object = Prof.objects.get(id=j)
+                matchingProfs_names.append(object.username)
+            
             return Response({
                 "msg": "Answers received successfully",
-                "profId": profId,
-                "answers": answers
+                #"profId": profId,
+                "usernames": matchingProfs_names,
+                #"answers": answers
             }, status=status.HTTP_200_OK)
         return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-
