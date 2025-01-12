@@ -1,10 +1,10 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import UserRegistrationSerializer, ProfRegistrationSerializer, LoginSerializer, AnswerSubmitSerializer
+from .serializers import UserRegistrationSerializer, ProfRegistrationSerializer, LoginSerializer, UserAnswerSubmitSerializer, ProfAnswerSubmitSerializer
 from .models import User,UserData,Prof,ProfData
 import json
-from .utils import rank_professionals
+from geminitest import rank_professionals_with_gemini
 
 '''
 def registration_view(request):
@@ -63,7 +63,6 @@ class LoginAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
                 )
 
-
 userQuestions = [
     "How have you been feeling lately?",
     "How long has this been going on for you?",
@@ -76,7 +75,18 @@ userQuestions = [
     "Have you ever had thoughts of hurting yourself or giving up? If yes, did you talk to anyone about it?",
     "Just so we can understand better—how old are you, and how do you identify (e.g., male, female, non-binary)?",
 ]
-
+profQuestions = [
+    "What’s your main area of expertise (like psychology, psychiatry, or something else)?",
+    "How long have you been working in mental health?",
+    "Are there certain issues (like anxiety, trauma, or depression) you feel you’re best at helping with?",
+    "Do you prefer working with any specific age groups, like teens, adults, or seniors?",
+    "What kind of therapy do you usually use (like CBT, mindfulness, etc.)?",
+    "Have you done online or virtual sessions before? How do you feel about them?",
+    "Have you worked with people dealing with big issues like trauma, abuse, or major life changes?",
+    "Do you work on your own or with a clinic/hospital?",
+    "Have you taken any extra training, like for trauma therapy or handling anxiety?",
+    "How do you usually handle it when someone is struggling with really tough thoughts or feelings, like self-harm?",
+]
 
 profData_list = []
 userData_list = []
@@ -119,12 +129,12 @@ def get_data(Id, p):
         uname = user.username
         print(f"Fetching data of User: {uname}")
         fetch(userData, uname, p)
-
     
-class AnswerSubmitAPIView(APIView):
+
+class UserAnswerSubmitAPIView(APIView):
     def post(self, request):
-        serializer = AnswerSubmitSerializer(data=request.data)
-        print("AnswerSubmitAPIView triggered.")
+        serializer = UserAnswerSubmitSerializer(data=request.data)
+        print("UserAnswerSubmitAPIView triggered.")
         if serializer.is_valid():
             userId = serializer.validated_data['userId']
             answers = serializer.validated_data['answers']
@@ -150,7 +160,7 @@ class AnswerSubmitAPIView(APIView):
             print(user_Jsonoutput)
             
             print("SENDING TO GEMINI.")
-            matchingProfs = rank_professionals(user_Jsonoutput, prof_Jsonoutput)
+            matchingProfs = rank_professionals_with_gemini(user_Jsonoutput, prof_Jsonoutput)
             print(f"THE RESULT From Gemini: ")
             print(matchingProfs)
             matchingProfs_ids = [int(profId) for profId in matchingProfs.split(",")]
@@ -163,6 +173,55 @@ class AnswerSubmitAPIView(APIView):
                 "msg": "Answers received successfully",
                 #"profId": profId,
                 "usernames": matchingProfs_names,
+                #"answers": answers
+            }, status=status.HTTP_200_OK)
+        return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ProfAnswerSubmitAPIView(APIView):
+    def post(self, request):
+        serializer = ProfAnswerSubmitSerializer(data=request.data)
+        print("ProfAnswerSubmitAPIView triggered.")
+        if serializer.is_valid():
+            profId = serializer.validated_data['profId']
+            answers = serializer.validated_data['answers']
+
+            print(f"Received profId: {profId}")
+            prof = Prof.objects.get(id=profId)
+            for i in range(0,10):
+                ProfData.objects.create(prof=prof, questionNo=i, questionText=profQuestions[i], answer=answers[i])
+                print(f"Set answer {i} for prof: {prof.username}.")
+
+            '''
+            print("getting data of users.")
+            get_data(prof.id, p=False)
+            prof_ids = [prof.id for prof in Prof.objects.all()]
+            print("getting data of professionals.")
+            for id in prof_ids:
+                get_data(id, p=True)
+            
+            user_Jsonoutput = json.dumps(userData_list, indent=2)
+            prof_Jsonoutput = json.dumps(profData_list, indent=2)
+            print("Prof data: ")
+            print(prof_Jsonoutput)
+            print("User data: ")
+            print(user_Jsonoutput)
+            
+            print("SENDING TO GEMINI.")
+            matchingProfs = rank_professionals_with_gemini(user_Jsonoutput, prof_Jsonoutput)
+            print(f"THE RESULT From Gemini: ")
+            print(matchingProfs)
+            matchingProfs_ids = [int(profId) for profId in matchingProfs.split(",")]
+            matchingProfs_names = []
+            for j in matchingProfs_ids:
+                object = Prof.objects.get(id=j)
+                matchingProfs_names.append(object.username)
+            '''
+            
+            return Response({
+                "msg": "Answers received successfully",
+                "profId": profId,
+                #"usernames": matchingProfs_names,
                 #"answers": answers
             }, status=status.HTTP_200_OK)
         return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)

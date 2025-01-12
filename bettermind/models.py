@@ -24,6 +24,7 @@ class User(CustomUser):
 
 class Prof(CustomUser):
     verified = models.BooleanField(default=False)
+    budget = models.IntegerField(default=10)
     best_fit_users = models.ManyToManyField(
         'User',
         related_name='matched_by_profs',

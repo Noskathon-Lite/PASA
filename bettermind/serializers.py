@@ -50,7 +50,17 @@ class LoginSerializer(serializers.Serializer):
         return data
 
 
-class AnswerSubmitSerializer(serializers.Serializer):
+class UserAnswerSubmitSerializer(serializers.Serializer):
+    userId = serializers.IntegerField()
+    answers = serializers.ListField(
+        child=serializers.CharField(),
+        min_length=10,
+        max_length=10,
+        help_text="A list of 10 answers."
+    )
+
+
+class ProfAnswerSubmitSerializer(serializers.Serializer):
     userId = serializers.IntegerField()
     answers = serializers.ListField(
         child=serializers.CharField(),
