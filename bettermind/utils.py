@@ -2,6 +2,45 @@ import google.generativeai as genai
 import json
 from ..apiKey import googleKey
 
+
+def rank_professionals_with_gemini(user_data, prof_data):
+    """
+    Ranks professionals based on user data using Google AI's Gemini model.
+
+    Args:
+        user_data (str): JSON string containing user data.
+        prof_data (str): JSON string containing professional data.
+
+    Returns:
+        str: IDs of matching professionals.
+    """
+    genai.configure(api_key=googleKey)
+
+    prompt = f"""
+    You are an expert at matching users with professionals based on their needs.
+
+    User Data:
+    {user_data}
+
+    Professionals:
+    {prof_data}
+
+    EXTREMELY IMPORTANT: Return only the IDs of the matching professionals in a comma-separated format. Example: 1,2,3
+    """
+
+    try:
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        print("Generating response from Gemini...")
+        response = model.generate_content(prompt)
+        return response.text.strip()
+    except Exception as e:
+        print(f"Error generating response: {str(e)}")
+        return "Error generating response"
+
+
+
+'''
+
 def rank_professionals_with_gemini(user_data, prof_data):
     """
     This function ranks professionals based on user data using Google AI's Gemini model.
@@ -13,13 +52,16 @@ def rank_professionals_with_gemini(user_data, prof_data):
     Returns:
         str: A comma-separated string of professional IDs ranked by relevance.
     """
+    # Configure the Gemini API key
     genai.configure(api_key=googleKey)
 
+    # Ensure user_data and prof_data are dictionaries
     if isinstance(user_data, str):
         user_data = json.loads(user_data)
     if isinstance(prof_data, str):
         prof_data = json.loads(prof_data)
 
+    # Prepare relevant user information
     user_info = {
         "main_issue": next((item["answer"] for item in user_data[0] if item["questionNo"] == 0), ""),
         "duration": next((item["answer"] for item in user_data[0] if item["questionNo"] == 1), ""),
@@ -28,12 +70,13 @@ def rank_professionals_with_gemini(user_data, prof_data):
         "previous_therapy": next((item["answer"] for item in user_data[0] if item["questionNo"] == 2), "")
     }
 
+    # Extract relevant professional data
     professionals = []
 
     for prof in prof_data:
-        if not prof: 
+        if not prof:  # Check if the list is empty
             print("Warning: Empty prof data encountered, skipping.")
-            continue 
+            continue  # Skip to the next iteration
         
         try:
             prof_info = {
@@ -48,6 +91,7 @@ def rank_professionals_with_gemini(user_data, prof_data):
             print(f"Error processing prof data: {prof}. Error: {e}")
             continue  # Skip problematic entries and move on
 
+    # Construct the prompt for Gemini
     prompt = f"""
     You are an expert at matching users with professionals based on their needs.
     Here is a user seeking help and the available professionals:
@@ -62,6 +106,7 @@ def rank_professionals_with_gemini(user_data, prof_data):
     Return only the IDs of the professionals in order of best match, separated by commas.
     """
 
+    # Generate the response using Gemini
     try:
         model = genai.GenerativeModel("gemini-1.5-flash")
         print("Generating response from Gemini...")
@@ -70,3 +115,5 @@ def rank_professionals_with_gemini(user_data, prof_data):
     except Exception as e:
         print(f"Error generating response: {str(e)}")
         return "Error generating response"
+
+'''
