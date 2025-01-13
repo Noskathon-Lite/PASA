@@ -3,12 +3,12 @@ from django.contrib.auth.models import AbstractUser
 
 class CustomUser(AbstractUser):
     fullname = models.CharField(max_length=45)
+    fcm_token = models.CharField(max_length=200, default="")
     USER_TYPE_CHOICES = (
         ('user', 'User'),
         ('prof', 'Prof'),
     )
     user_type = models.CharField(max_length=10, choices=USER_TYPE_CHOICES, default='user')
-
 
 class User(CustomUser):
     best_fit_profs = models.ManyToManyField(

@@ -13,20 +13,20 @@ from django.db import transaction
 
 @api_view(['POST'])
 def get_agora_token(request):
-    """
-    API endpoint to generate and return an Agora token for a channel.
-    """
     data = request.data
     channel_name = data.get('channel_name')
-    uid = data.get('uid', 0)  # Default is 0
+    #uid = data.get('uid', 0)  # Default is 0
+    uid = data.get('uid')
+    pid = data.get('pid')
     role = data.get('role', 'publisher')  # Default role
 
     if not channel_name:
         return Response({'error': 'Channel name is required'}, status=400)
-
     try:
-        token = generate_agora_token(channel_name, uid, role)
-        return Response({'token': token, 'channel_name': channel_name})
+        userToken = generate_agora_token(channel_name, uid, role)
+        profToken = generate_agora_token(channel_name, pid, role)
+        return Response({'token': userToken, 'channel_name': channel_name})
+    
     except Exception as e:
         return Response({'error': str(e)}, status=500)
 
@@ -265,7 +265,7 @@ class ProfAnswerSubmitAPIView(APIView):
 
             expertise_summary = get_summary(prof_Jsonoutput)
             print(f"THE expertise of this prof is: {expertise_summary}")
-            
+
             prof.expertise = expertise_summary
             prof.save()
             print(f"PROFESSIONAL EXPERTISE: {prof.expertise}")
