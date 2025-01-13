@@ -59,7 +59,7 @@ def get_summary(prof_data):
 
     {prof_data}
 
-    EXTREMELY IMPORTANT: Only Return the expertise of this professional in 1 sentence(in around 150 characters).
+    EXTREMELY IMPORTANT: Only Return the expertise of this professional in 1 sentence(of around 100 characters).
     """
 
     try:

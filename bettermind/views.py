@@ -8,6 +8,7 @@ from .utils import rank_professionals, get_summary
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .agoratoken import generate_agora_token
+from django.db import transaction
 
 
 @api_view(['POST'])
@@ -77,18 +78,33 @@ class LoginAPIView(APIView):
             user = serializer.validated_data['user']
             print(f"Logged in as: {user.username}")
             #print(f"ATTRIBUTES: {user.__dict__}") To get all attributes of an object.
+
+            if user.user_type == 'user':
+                user = User.objects.get(id=user.id)  # Cast to User
+                best_profs = user.best_fit_profs.all()
+                profnames = [prof.username for prof in best_profs]
+                budgets = [prof.budget for prof in best_profs]
+                summary = [prof.expertise for prof in best_profs]
+            else:
+                profnames = []
+                budgets = []
+                summary = []
+
             return Response({
                 "msg": "Login successful",
                 "username": user.username,
-                "userType": "Prof" if (user.user_type == "prof") else "User"
+                "ID": user.id,
+                "userType": "Prof" if user.user_type == "prof" else "User",
+                "profnames": profnames,
+                "budgets": budgets,
+                "summaries": summary
             }, status=status.HTTP_200_OK)
         else:
-            return Response(
-                {'msg': 'Invalid Username or password',
+            return Response({
+                'msg': 'Invalid Username or password',
                 'error': serializer.errors
-                }, 
-                status=status.HTTP_400_BAD_REQUEST
-                )
+            }, status=status.HTTP_400_BAD_REQUEST)
+
 
 userQuestions = [
     "How have you been feeling lately?",
@@ -194,18 +210,27 @@ class UserAnswerSubmitAPIView(APIView):
             print(matchingProfs)
             try:
                 matchingProfs_ids = [int(profId) for profId in matchingProfs.split(",")]
+                matchingProfs_objects = Prof.objects.filter(id__in=matchingProfs_ids)
+
+                with transaction.atomic() :
+                    user.best_fit_profs.set(matchingProfs_objects)
+                    user.save()
+
                 matchingProfs_names = []
                 matchingProfs_budgets = []
+                matchingProfs_expertise = []
                 for j in matchingProfs_ids:
                     object = Prof.objects.get(id=j)
                     matchingProfs_names.append(object.username)
                     matchingProfs_budgets.append(object.budget)
+                    matchingProfs_expertise.append(object.expertise)
 
                 return Response({
                     "msg": "Answers received successfully",
                     #"profId": profId,
                     "profnames": matchingProfs_names,
                     'budgets':matchingProfs_budgets,
+                    'expertises':matchingProfs_expertise
                     #"answers": answers
                 }, status=status.HTTP_200_OK)
             except:
@@ -239,7 +264,12 @@ class ProfAnswerSubmitAPIView(APIView):
             prof_Jsonoutput = json.dumps(profData_list2, indent=2)
 
             expertise_summary = get_summary(prof_Jsonoutput)
+            print(f"THE expertise of this prof is: {expertise_summary}")
+            
             prof.expertise = expertise_summary
+            prof.save()
+            print(f"PROFESSIONAL EXPERTISE: {prof.expertise}")
+
             '''
             print("getting data of users.")
             get_data(prof.id, p=False)
