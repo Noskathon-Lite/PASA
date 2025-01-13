@@ -39,7 +39,7 @@ def rank_professionals(user_data, prof_data):
 
 
 
-def rank_professionals(user_data, prof_data):
+def get_summary(prof_data):
     """
     Ranks professionals based on user data using Google AI's Gemini model.
 
@@ -53,15 +53,13 @@ def rank_professionals(user_data, prof_data):
     genai.configure(api_key=googleKey)
 
     prompt = f"""
-    You are an expert at matching users with professionals based on their needs.
+    You are an expert at generating summary of expertise professional with given data.
 
-    User Data:
-    {user_data}
+    Professional's Data = 
 
-    Professionals:
     {prof_data}
 
-    EXTREMELY IMPORTANT: Return only the IDs of the matching professionals in a comma-separated format. Example: 1,2,3
+    EXTREMELY IMPORTANT: Only Return the expertise of this professional in 1 sentence(in around 150 characters).
     """
 
     try:

@@ -4,7 +4,7 @@ from rest_framework import status
 from .serializers import UserRegistrationSerializer, ProfRegistrationSerializer, LoginSerializer, UserAnswerSubmitSerializer, ProfAnswerSubmitSerializer
 from .models import User,UserData,Prof,ProfData
 import json
-from .utils import rank_professionals
+from .utils import rank_professionals, get_summary
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .agoratoken import generate_agora_token
@@ -230,7 +230,16 @@ class ProfAnswerSubmitAPIView(APIView):
             for i in range(0,10):
                 ProfData.objects.create(prof=prof, questionNo=i, questionText=profQuestions[i], answer=answers[i])
                 print(f"Set answer {i} for prof: {prof.username}.")
+            prof_data = prof.profdata.all()
 
+            print(f"Fetching profdata of prof: {prof.username}")
+            fetch(prof_data, prof.username, p=True)
+            profData_list2 = profData_list.copy()
+            profData_list.clear()
+            prof_Jsonoutput = json.dumps(profData_list2, indent=2)
+
+            expertise_summary = get_summary(prof_Jsonoutput)
+            prof.expertise = expertise_summary
             '''
             print("getting data of users.")
             get_data(prof.id, p=False)
