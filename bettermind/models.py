@@ -3,7 +3,6 @@ from django.contrib.auth.models import AbstractUser
 
 class CustomUser(AbstractUser):
     fullname = models.CharField(max_length=45)
-    fcm_token = models.CharField(max_length=200, default="")
     USER_TYPE_CHOICES = (
         ('user', 'User'),
         ('prof', 'Prof'),
@@ -11,6 +10,7 @@ class CustomUser(AbstractUser):
     user_type = models.CharField(max_length=10, choices=USER_TYPE_CHOICES, default='user')
 
 class User(CustomUser):
+    fcm_token = models.CharField(max_length=200, default="")
     best_fit_profs = models.ManyToManyField(
         'Prof',
         related_name= 'matched_by_user',
@@ -26,6 +26,7 @@ class Prof(CustomUser):
     verified = models.BooleanField(default=False)
     budget = models.IntegerField(default=10)
     expertise = models.CharField(max_length=200, default="")
+    fcm_token = models.CharField(max_length=200, default="")
     best_fit_users = models.ManyToManyField(
         'User',
         related_name='matched_by_profs',

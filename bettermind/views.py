@@ -9,6 +9,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .agoratoken import generate_agora_token
 from django.db import transaction
+from .firebaseutils import send_push_notification
 
 
 @api_view(['POST'])
@@ -19,17 +20,69 @@ def get_agora_token(request):
     uid = data.get('uid')
     pid = data.get('pid')
     role = data.get('role', 'publisher')  # Default role
+    prof_fcm_token = Prof.objects.get(id=pid).fcm_token
 
-    if not channel_name:
-        return Response({'error': 'Channel name is required'}, status=400)
+    if not channel_name or not uid or not pid:
+        return Response({'error': 'Channel name, UserId, ProfessionalId is required'}, status=400)
     try:
         userToken = generate_agora_token(channel_name, uid, role)
         profToken = generate_agora_token(channel_name, pid, role)
+
+        try:
+            send_push_notification(
+                fcm_token=prof_fcm_token,
+                title="Session Request",
+                body="User has requested a session. Tap to join.",
+                data={
+                    "channel_name": channel_name,
+                    "token": profToken,
+                    "uid": pid
+                }
+            )
+        except Exception as e:
+            return Response({'error': f"Failed to send notification: {e}"}, status=500)
+        
         return Response({'token': userToken, 'channel_name': channel_name})
     
     except Exception as e:
         return Response({'error': str(e)}, status=500)
 
+
+@api_view(['POST'])
+def save_userfcm_token(request):
+    user_id = request.data.get('userId')
+    fcm_token = request.data.get('fcmToken')
+
+    if not user_id or not fcm_token:
+        return Response({'error': 'userId and fcmToken are required'}, status=400)
+    try:
+        user = User.objects.get(id=user_id)
+        user.fcm_token = fcm_token
+        user.save()
+        return Response({'message': 'FCM token saved successfully'})
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=404)
+    except Exception as e:
+        print(f"An error occured in save_userfcm_token(): {e}")
+        return Response({'error': str(e)}, status=500)
+
+@api_view(['POST'])
+def save_proffcm_token(request):
+    prof_id = request.data.get('profId')
+    fcm_token = request.data.get('fcmToken')
+
+    if not prof_id or not fcm_token:
+        return Response({'error': 'profId and fcmToken are required'}, status=400)
+    try:
+        prof = Prof.objects.get(id=prof_id)
+        prof.fcm_token = fcm_token
+        prof.save()
+        return Response({'message': 'FCM token saved successfully'})
+    except Prof.DoesNotExist:
+        return Response({'error': 'Prof not found'}, status=404)
+    except Exception as e:
+        print(f"An error occured in save_proffcm_token(): {e}")
+        return Response({'error': str(e)}, status=500)
 
 '''
 def registration_view(request):
