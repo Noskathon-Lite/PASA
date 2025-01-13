@@ -50,7 +50,9 @@ def get_agora_token(request):
 
 @api_view(['POST'])
 def save_userfcm_token(request):
-    user_id = request.data.get('userId')
+    print("Request body ,FCM for USER: ")
+    print(request.data)
+    user_id = request.data.get('ID')
     fcm_token = request.data.get('fcmToken')
 
     if not user_id or not fcm_token:
@@ -66,9 +68,12 @@ def save_userfcm_token(request):
         print(f"An error occured in save_userfcm_token(): {e}")
         return Response({'error': str(e)}, status=500)
 
+
 @api_view(['POST'])
 def save_proffcm_token(request):
-    prof_id = request.data.get('profId')
+    print("Request body ,FCM for PROF: ")
+    print(request.data)
+    prof_id = request.data.get('ID')
     fcm_token = request.data.get('fcmToken')
 
     if not prof_id or not fcm_token:
@@ -83,6 +88,7 @@ def save_proffcm_token(request):
     except Exception as e:
         print(f"An error occured in save_proffcm_token(): {e}")
         return Response({'error': str(e)}, status=500)
+
 
 '''
 def registration_view(request):
@@ -142,7 +148,7 @@ class LoginAPIView(APIView):
                 profnames = []
                 budgets = []
                 summary = []
-
+            print(f"The id is: {user.id}")
             return Response({
                 "msg": "Login successful",
                 "username": user.username,

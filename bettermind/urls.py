@@ -6,7 +6,9 @@ from .views import (
     LoginAPIView,
     UserAnswerSubmitAPIView,
     ProfAnswerSubmitAPIView,
-    get_agora_token
+    get_agora_token,
+    save_proffcm_token,
+    save_userfcm_token,
 )
 
 urlpatterns = [
@@ -16,4 +18,6 @@ urlpatterns = [
     path('answer/user', UserAnswerSubmitAPIView.as_view(), name="userAnswer"),
     path('answer/prof', ProfAnswerSubmitAPIView.as_view(), name="profAnswer"),
     path('getToken/', get_agora_token, name='getAgoraToken'),
+    path('savefcm/user', save_userfcm_token, name="saveUserFcm"),
+    path('savefcm/prof', save_proffcm_token, name="saveProfFcm"),
 ]

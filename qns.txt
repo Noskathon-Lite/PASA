@@ -7,3 +7,8 @@ profRegister = http://192.168.137.16:8000/register/prof
 
 userAnswers = http://192.168.137.16:8000/answer/user
 profAnswers = http://192.168.137.16:8000/answer/prof
+
+http://192.168.137.16:8000/savefcm/user
+
+userFcm = http://192.168.137.16:8000/savefcm/user
+profFcm = http://192.168.137.16:8000/savefcm/prof
