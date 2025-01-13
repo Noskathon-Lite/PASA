@@ -15,6 +15,20 @@ namespace ProfessionalDataFinder
         private string _profId;
 
 
+        public string GetProfName()
+        {
+            return profName.text;
+        }
+
+        public string GetBudget()
+        {
+            return profBudget.text;
+        }
+
+        public string GetExpertise()
+        {
+            return profExpertise.text;
+        }
         public void SetProfName(string profNameString)
         {
             this.profName.text = profNameString;
@@ -39,6 +53,7 @@ namespace ProfessionalDataFinder
         {
             profBudget.text = budget;
         }
+        
 
         public ButtonManager GetCurrentButton()
         {

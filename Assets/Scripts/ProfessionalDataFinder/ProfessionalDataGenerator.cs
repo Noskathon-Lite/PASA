@@ -1,12 +1,14 @@
 using System;
+using System.Collections.Generic;
 using BeginningUI;
+using SignIn;
 using TMPro;
 using Unity.Mathematics;
 using UnityEngine;
 
 namespace ProfessionalDataFinder
 {
-    public class PopUpProfessionalsDataInitiator : MonoBehaviour
+    public class ProfessionalDataGenerator : MonoBehaviour
     {
         [Header("it is a pop up data shown")] [SerializeField]
         private GameObject professionalDataDisplayObject;
@@ -29,21 +31,37 @@ namespace ProfessionalDataFinder
         //after filling data, when the button is clicked we ensure the texts to be changed and all
 
 
-        private void Start()
+        private List<GameObject> objs = new List<GameObject>();
+        public void SpawnProfessionalData(ProfessionalsData professionalsData)
         {
-            for (int i = 0; i < _count; i++)
+            if (objs.Count>0)
             {
-                GameObject obj = Instantiate(professionalBasicData, transform.position, Quaternion.identity, basicDataParent);
+                return;
+            }
+            
+            foreach (var profDatta in professionalsData.professionalDataCollection)
+            {
+                GameObject obj = Instantiate(professionalBasicData, transform.position, Quaternion.identity,
+                    basicDataParent);
+                objs.Add(obj);
                 MainMenuProfDataInititator menuProfDataInititator = obj.GetComponent<MainMenuProfDataInititator>();
 
+                menuProfDataInititator.SetProfName(profDatta.name);
+                menuProfDataInititator.SetProfBudget(profDatta.budget);
+                menuProfDataInititator.SetProfExpertise(profDatta.summary);
+
+
                 MainMenuProfDataInititator capturedMenuProfDataInititator = menuProfDataInititator;
+
 
                 capturedMenuProfDataInititator.GetCurrentButton().onClick.AddListener(() =>
                 {
                     popAnimation.OpenPanel();
+                    professionalName.text = capturedMenuProfDataInititator.GetProfName();
+                    professionalExpertise.text = capturedMenuProfDataInititator.GetExpertise();
+                    professionalBudget.text = capturedMenuProfDataInititator.GetBudget();
                 });
             }
         }
-
     }
 }
