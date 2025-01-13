@@ -12,3 +12,8 @@ http://192.168.137.16:8000/savefcm/user
 
 userFcm = http://192.168.137.16:8000/savefcm/user
 profFcm = http://192.168.137.16:8000/savefcm/prof
+
+
+postgres 
+user:postgres
+password = postgresql
