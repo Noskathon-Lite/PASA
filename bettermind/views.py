@@ -4,7 +4,7 @@ from rest_framework import status
 from .serializers import UserRegistrationSerializer, ProfRegistrationSerializer, LoginSerializer, UserAnswerSubmitSerializer, ProfAnswerSubmitSerializer
 from .models import User,UserData,Prof,ProfData
 import json
-from geminitest import rank_professionals_with_gemini
+from .utils import rank_professionals
 
 '''
 def registration_view(request):
@@ -160,7 +160,7 @@ class UserAnswerSubmitAPIView(APIView):
             print(user_Jsonoutput)
             
             print("SENDING TO GEMINI.")
-            matchingProfs = rank_professionals_with_gemini(user_Jsonoutput, prof_Jsonoutput)
+            matchingProfs = rank_professionals(user_Jsonoutput, prof_Jsonoutput)
             print(f"THE RESULT From Gemini: ")
             print(matchingProfs)
             matchingProfs_ids = [int(profId) for profId in matchingProfs.split(",")]
@@ -208,7 +208,7 @@ class ProfAnswerSubmitAPIView(APIView):
             print(user_Jsonoutput)
             
             print("SENDING TO GEMINI.")
-            matchingProfs = rank_professionals_with_gemini(user_Jsonoutput, prof_Jsonoutput)
+            matchingProfs = rank_professionals(user_Jsonoutput, prof_Jsonoutput)
             print(f"THE RESULT From Gemini: ")
             print(matchingProfs)
             matchingProfs_ids = [int(profId) for profId in matchingProfs.split(",")]
