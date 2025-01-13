@@ -31,6 +31,7 @@ class ProfRegistrationSerializer(serializers.ModelSerializer):
             email=validated_data['email'],
             password=validated_data['password'],
             fullname=validated_data['fullname'],
+            budget=validated_data['budget'],
             user_type = 'prof'
         )
         return prof
@@ -51,7 +52,7 @@ class LoginSerializer(serializers.Serializer):
 
 
 class UserAnswerSubmitSerializer(serializers.Serializer):
-    userId = serializers.IntegerField()
+    ID = serializers.IntegerField()
     answers = serializers.ListField(
         child=serializers.CharField(),
         min_length=10,
@@ -61,7 +62,7 @@ class UserAnswerSubmitSerializer(serializers.Serializer):
 
 
 class ProfAnswerSubmitSerializer(serializers.Serializer):
-    profId = serializers.IntegerField()
+    ID = serializers.IntegerField()
     answers = serializers.ListField(
         child=serializers.CharField(),
         min_length=10,

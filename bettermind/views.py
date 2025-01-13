@@ -51,8 +51,8 @@ class UserRegistrationAPIView(APIView):
             user = serializer.save()
             print(f"User Id is: {user.id}")
             print(f"The username is {user.username}")
-            return Response({"msg": "User registered successfully"}, status=status.HTTP_201_CREATED)
-        return Response({'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"msg": "User registered successfully", "id":user.id}, status=status.HTTP_201_CREATED)
+        return Response({'msg':'User already Exist, try different username.', 'Error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     
 
 class ProfRegistrationAPIView(APIView):
@@ -63,8 +63,9 @@ class ProfRegistrationAPIView(APIView):
             prof = serializer.save()
             print(f"Prof Id is: {prof.id}")
             print(f"The username is {prof.username}")
-            return Response({"msg": "Prof registered successfully"}, status=status.HTTP_201_CREATED)
-        return Response({'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"msg": "Proffesional registered successfully", "id":prof.id}, status=status.HTTP_201_CREATED)
+        #return Response({'msg':'Professional already Exist, try different username.','Error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'msg':'Professional already Exist, try different username.','Error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LoginAPIView(APIView):
@@ -159,10 +160,12 @@ def get_data(Id, p):
 
 class UserAnswerSubmitAPIView(APIView):
     def post(self, request):
+        print("INCOMING DATA: ")
+        print(request.data)
         serializer = UserAnswerSubmitSerializer(data=request.data)
         print("UserAnswerSubmitAPIView triggered.")
         if serializer.is_valid():
-            userId = serializer.validated_data['userId']
+            userId = serializer.validated_data['ID']
             answers = serializer.validated_data['answers']
 
             print(f"Received userId: {userId}")
@@ -192,14 +195,17 @@ class UserAnswerSubmitAPIView(APIView):
             try:
                 matchingProfs_ids = [int(profId) for profId in matchingProfs.split(",")]
                 matchingProfs_names = []
+                matchingProfs_budgets = []
                 for j in matchingProfs_ids:
                     object = Prof.objects.get(id=j)
                     matchingProfs_names.append(object.username)
+                    matchingProfs_budgets.append(object.budget)
 
                 return Response({
                     "msg": "Answers received successfully",
                     #"profId": profId,
                     "profnames": matchingProfs_names,
+                    'budgets':matchingProfs_budgets,
                     #"answers": answers
                 }, status=status.HTTP_200_OK)
             except:
@@ -216,7 +222,7 @@ class ProfAnswerSubmitAPIView(APIView):
         serializer = ProfAnswerSubmitSerializer(data=request.data)
         print("ProfAnswerSubmitAPIView triggered.")
         if serializer.is_valid():
-            profId = serializer.validated_data['profId']
+            profId = serializer.validated_data['ID']
             answers = serializer.validated_data['answers']
 
             print(f"Received profId: {profId}")
