@@ -3,7 +3,7 @@ import json
 
 
 def feedAnswers(ID):
-    url = "http://127.0.0.1:8000/answer"
+    url = "http://127.0.0.1:8000/answer/user"
     headers = {'Content-Type': 'application/json'}
     answers = [
         'This is answer0',
@@ -26,5 +26,7 @@ def feedAnswers(ID):
     response = response_data.json()
     print(f"THE RESPONSE FROM SERVER: {response}")
     print(f"THE STATUS CODE IS: {response_data.status_code}")
-    print("Usernames: ")
-    print(response['usernames'])
+    #print("Profnames: ")
+    #print(response['profnames'])
+
+feedAnswers(2)

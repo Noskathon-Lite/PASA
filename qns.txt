@@ -1,0 +1,9 @@
+local net ip on hotspot= 192.168.137.16
+
+url:
+login = http://192.168.137.16:8000/login
+userRegister =  http://192.168.137.16:8000/register/user
+profRegister = http://192.168.137.16:8000/register/prof
+
+userAnswers = http://192.168.137.16:8000/answer/user
+profAnswers = http://192.168.137.16:8000/answer/prof

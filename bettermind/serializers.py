@@ -23,7 +23,7 @@ class ProfRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     class Meta:
         model = Prof
-        fields = ['username', 'email', 'password', 'fullname']
+        fields = ['username', 'email', 'password', 'fullname', 'budget']
     def create(self, validated_data):
         print("Prof Serializer")
         prof = Prof.objects.create_user(
@@ -61,7 +61,7 @@ class UserAnswerSubmitSerializer(serializers.Serializer):
 
 
 class ProfAnswerSubmitSerializer(serializers.Serializer):
-    userId = serializers.IntegerField()
+    profId = serializers.IntegerField()
     answers = serializers.ListField(
         child=serializers.CharField(),
         min_length=10,

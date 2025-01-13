@@ -5,6 +5,30 @@ from .serializers import UserRegistrationSerializer, ProfRegistrationSerializer,
 from .models import User,UserData,Prof,ProfData
 import json
 from .utils import rank_professionals
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .agoratoken import generate_agora_token
+
+
+@api_view(['POST'])
+def get_agora_token(request):
+    """
+    API endpoint to generate and return an Agora token for a channel.
+    """
+    data = request.data
+    channel_name = data.get('channel_name')
+    uid = data.get('uid', 0)  # Default is 0
+    role = data.get('role', 'publisher')  # Default role
+
+    if not channel_name:
+        return Response({'error': 'Channel name is required'}, status=400)
+
+    try:
+        token = generate_agora_token(channel_name, uid, role)
+        return Response({'token': token, 'channel_name': channel_name})
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
 
 '''
 def registration_view(request):
@@ -45,6 +69,8 @@ class ProfRegistrationAPIView(APIView):
 
 class LoginAPIView(APIView):
     def post(self, request):
+        print("THE DATA: ")
+        print(request.data)
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.validated_data['user']
@@ -163,18 +189,25 @@ class UserAnswerSubmitAPIView(APIView):
             matchingProfs = rank_professionals(user_Jsonoutput, prof_Jsonoutput)
             print(f"THE RESULT From Gemini: ")
             print(matchingProfs)
-            matchingProfs_ids = [int(profId) for profId in matchingProfs.split(",")]
-            matchingProfs_names = []
-            for j in matchingProfs_ids:
-                object = Prof.objects.get(id=j)
-                matchingProfs_names.append(object.username)
-            
-            return Response({
-                "msg": "Answers received successfully",
-                #"profId": profId,
-                "usernames": matchingProfs_names,
-                #"answers": answers
-            }, status=status.HTTP_200_OK)
+            try:
+                matchingProfs_ids = [int(profId) for profId in matchingProfs.split(",")]
+                matchingProfs_names = []
+                for j in matchingProfs_ids:
+                    object = Prof.objects.get(id=j)
+                    matchingProfs_names.append(object.username)
+
+                return Response({
+                    "msg": "Answers received successfully",
+                    #"profId": profId,
+                    "profnames": matchingProfs_names,
+                    #"answers": answers
+                }, status=status.HTTP_200_OK)
+            except:
+                print("NO matching profs")
+                return Response({
+                    "msg":"No matching profs.",
+                    "profnames": ""
+                }, status=status.HTTP_200_OK)
         return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
